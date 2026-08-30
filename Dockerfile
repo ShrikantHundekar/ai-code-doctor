@@ -30,7 +30,7 @@ COPY --from=frontend-builder /app/dist ./dist
 COPY start.sh /start.sh
 RUN chmod +x /start.sh
 
-# Create binary cd wrappers everywhere so "cd" works as an executable
+# Create binary cd wrappers everywhere
 RUN echo '#!/bin/sh\n\
 if [ "$1" = "backend" ] && [ "$2" = "&&" ]; then\n\
     shift 2\n\
@@ -49,6 +49,7 @@ ENV PYTHONUNBUFFERED=1
 
 WORKDIR /app/backend
 
+EXPOSE 8080
 EXPOSE 5000
 
-ENTRYPOINT ["/start.sh"]
+CMD ["/start.sh"]
