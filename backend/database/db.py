@@ -41,8 +41,17 @@ def init_db(app):
     db.init_app(app)
 
     with app.app_context():
-        db.create_all()
-        _migrate_sqlite_schema(app)
+        try:
+            db.create_all()
+        except Exception as e:
+            # Prevent worker crash if tables were created concurrently or already exist
+            print(f"Notice during db.create_all: {e}")
+
+        try:
+            _migrate_sqlite_schema(app)
+        except Exception as e:
+            print(f"Notice during schema migration: {e}")
+
         print(f"Database initialized: {DATABASE_URL}")
 
 

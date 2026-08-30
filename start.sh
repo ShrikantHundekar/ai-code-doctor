@@ -19,4 +19,9 @@ echo "Starting AI Code Doctor on 0.0.0.0:$PORT"
 echo "=================================================="
 
 cd /app/backend
+
+# Pre-initialize database once in main process before spawning workers
+python -c "from app import app; from database import init_db; init_db(app)" || true
+
+# Start gunicorn
 exec gunicorn app:app --bind "0.0.0.0:$PORT" --workers 2 --timeout 120 --access-logfile - --error-logfile -
