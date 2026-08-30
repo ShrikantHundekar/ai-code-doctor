@@ -1,10 +1,14 @@
 """Database models using SQLAlchemy"""
 import json
-from datetime import datetime
+from datetime import datetime, timezone
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 
 db = SQLAlchemy()
+
+
+def utc_now():
+    return datetime.now(timezone.utc)
 
 
 class User(db.Model):
@@ -15,8 +19,8 @@ class User(db.Model):
     name = db.Column(db.String(120), nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False, index=True)
     password_hash = db.Column(db.String(255), nullable=False)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=utc_now)
+    updated_at = db.Column(db.DateTime, default=utc_now, onupdate=utc_now)
 
     # Relationships
     reviews = db.relationship('Review', backref='user', lazy=True, cascade='all, delete-orphan')
@@ -71,8 +75,8 @@ class Review(db.Model):
     version = db.Column(db.Integer, default=1)
     improvement_plan = db.Column(db.Text)  # JSON string of structured priority plan
 
-    created_at = db.Column(db.DateTime, default=datetime.utcnow, index=True)
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=utc_now, index=True)
+    updated_at = db.Column(db.DateTime, default=utc_now, onupdate=utc_now)
 
     def to_dict(self):
         """Convert to dictionary for API response"""
@@ -131,8 +135,8 @@ class Preference(db.Model):
     default_provider = db.Column(db.String(50), default='openai')
     default_language = db.Column(db.String(50), default='python')
     theme = db.Column(db.String(20), default='dark')
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=utc_now)
+    updated_at = db.Column(db.DateTime, default=utc_now, onupdate=utc_now)
 
     def to_dict(self):
         return {
