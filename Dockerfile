@@ -10,7 +10,7 @@ RUN npm run build
 FROM python:3.11-slim
 WORKDIR /app
 
-# Install system dependencies
+# Install system tools
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     curl \
@@ -26,16 +26,9 @@ COPY backend/ ./backend/
 # Copy built React frontend to /app/dist
 COPY --from=frontend-builder /app/dist ./dist
 
-# Create a compatibility wrapper for any cached "cd" start command in Railway
-RUN echo '#!/bin/sh\n\
-if [ "$1" = "backend" ] && [ "$2" = "&&" ]; then\n\
-    shift 2\n\
-    cd /app/backend\n\
-    exec "$@"\n\
-fi\n\
-cd /app/backend\n\
-exec gunicorn app:app --bind 0.0.0.0:${PORT:-5000} --workers 2 --timeout 120\n\
-' > /usr/local/bin/cd && chmod +x /usr/local/bin/cd
+# Copy and configure startup script
+COPY start.sh /start.sh
+RUN chmod +x /start.sh
 
 ENV FLASK_ENV=production
 ENV PYTHONUNBUFFERED=1
@@ -44,4 +37,4 @@ WORKDIR /app/backend
 
 EXPOSE 5000
 
-CMD ["gunicorn", "app:app", "--bind", "0.0.0.0:5000", "--workers", "2", "--timeout", "120"]
+ENTRYPOINT ["/start.sh"]
