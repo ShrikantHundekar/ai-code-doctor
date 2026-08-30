@@ -30,6 +30,20 @@ COPY --from=frontend-builder /app/dist ./dist
 COPY start.sh /start.sh
 RUN chmod +x /start.sh
 
+# Create binary cd wrappers everywhere so "cd" works as an executable
+RUN echo '#!/bin/sh\n\
+if [ "$1" = "backend" ] && [ "$2" = "&&" ]; then\n\
+    shift 2\n\
+    cd /app/backend\n\
+    exec "$@"\n\
+fi\n\
+cd /app/backend\n\
+exec /start.sh "$@"\n\
+' > /usr/local/bin/cd && \
+chmod +x /usr/local/bin/cd && \
+ln -sf /usr/local/bin/cd /usr/bin/cd && \
+ln -sf /usr/local/bin/cd /bin/cd
+
 ENV FLASK_ENV=production
 ENV PYTHONUNBUFFERED=1
 
